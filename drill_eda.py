@@ -113,12 +113,10 @@ def main():
         print("Error: data/sample_sales.csv not found.")
         return
 
-    # --- FEATURE ENGINEERING (لحل مشكلة نقص الأعمدة الرقمية) ---
-    # حساب الإيرادات إذا لم تكن موجودة
+    # --- FEATURE ENGINEERING ---
     if 'revenue' not in df.columns and 'quantity' in df.columns and 'unit_price' in df.columns:
         df['revenue'] = df['quantity'] * df['unit_price']
         
-    # استخراج رقم الشهر من التاريخ كعمود رقمي رابع
     if 'date' in df.columns:
         df['month'] = pd.to_datetime(df['date']).dt.month
     # --------------------------------------------------------
