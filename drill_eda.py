@@ -106,36 +106,43 @@ def main():
     """Load data, compute summary, and generate all plots."""
     os.makedirs("output", exist_ok=True)
 
-    # Load the CSV from data/sample_sales.csv
+    # 1. Load the CSV
     try:
         df = pd.read_csv("data/sample_sales.csv")
     except FileNotFoundError:
-        print("Error: data/sample_sales.csv not found. Make sure you are in the right directory.")
+        print("Error: data/sample_sales.csv not found.")
         return
 
-    # Call compute_summary and save the result
+    # --- FEATURE ENGINEERING (لحل مشكلة نقص الأعمدة الرقمية) ---
+    # حساب الإيرادات إذا لم تكن موجودة
+    if 'revenue' not in df.columns and 'quantity' in df.columns and 'unit_price' in df.columns:
+        df['revenue'] = df['quantity'] * df['unit_price']
+        
+    # استخراج رقم الشهر من التاريخ كعمود رقمي رابع
+    if 'date' in df.columns:
+        df['month'] = pd.to_datetime(df['date']).dt.month
+    # --------------------------------------------------------
+
+    # 2. Call compute_summary
     print("Computing summary statistics...")
     compute_summary(df)
 
-    # Choose 4 numeric-friendly columns and call plot_distributions
-    # We dynamically select the first 4 numeric columns to ensure it works
+    # 3. Choose 4 numeric columns for distributions
     numeric_columns = df.select_dtypes(include=[np.number]).columns.tolist()
     
     if len(numeric_columns) >= 4:
         cols_to_plot = numeric_columns[:4]
     else:
-        # Fallback if there are less than 4 numeric columns
         cols_to_plot = numeric_columns 
         
     print(f"Plotting distributions for: {cols_to_plot}...")
     plot_distributions(df, cols_to_plot, "output/distributions.png")
 
-    # Call plot_correlation
+    # 4. Call plot_correlation
     print("Plotting correlation heatmap...")
     plot_correlation(df, "output/correlation.png")
     
     print("All tasks completed successfully! Check the 'output' folder.")
-
 
 if __name__ == "__main__":
     main()
